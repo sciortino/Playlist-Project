@@ -1,0 +1,168 @@
+body {
+    font-family: sans-serif;
+    background-color: #333333;
+    background-image: url('pexels-photo-132205.jpeg')
+}
+
+h1 {
+    font-family: "Helvetica Neue Light", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 50px;
+    color: #51453B;
+    line-height: 60px;
+    font-weight: 300;
+}
+
+h2 {
+    font-size: 24px;
+    color: #9D855A;
+    line-height: 29px;
+}
+
+h3 {
+    font-size: 18px;
+    color: #4A4A4A;
+    line-height: 23px;
+}
+ p {
+    font-family: "Helvetica Neue", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    color: #7B7573;
+    line-height: 24px;
+    font-weight: 400;
+ }
+
+a {
+    text-decoration: none;
+    color:#FFFFCC;
+    font-size: .75em;
+}
+
+.top-menu {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    background-color: #283651;
+    opacity: 0.5;
+}
+.top-menu p {
+    margin-bottom: 0;
+    line-height: 16px;
+}
+.top-menu a {
+    margin-bottom: 0;
+    line-height: 16px;
+    font-size: 16px;
+    color: #FFF6E4;
+    font-weight: 400;
+}
+.divider {
+    height: 15px;
+}
+.divider.blue {
+    background-color: #42C3C9;
+}
+.divider.green {
+    background-color: #9FB80A;
+}
+.banner.main {
+    margin-top: 10px;
+    height: 130px;
+    background-size: cover;
+    background-color: #283651;
+    opacity: 0.8;
+}
+.banner h1 {
+    margin: 15px;
+    color: #9D855A;
+}
+.main-section {
+    background-color: #283651;
+    opacity: 0.8;
+    padding-left: 50px;
+}
+
+.header {
+    left:50%;
+    text-align: center;
+}
+.name {
+    width:100%;
+    display: inline-block;
+    float: left;
+    text-align: left;
+    font-size: 2.3em;
+    margin-top:10px;
+    color: #9D855A;
+    font-weight: bold;
+}
+.name a {
+    color: #9D855A;
+    font-weight: bold;
+}
+.artist {
+    color: #E0D0B2;
+    font-style: oblique;
+}
+.album {
+    color: #E0D0B2;
+    font-style: oblique;
+}
+.name-subheader {
+    width:100%;
+    display: inline-block;
+    float: left;
+    text-align: left;
+    font-size: 1.6em;
+    margin-bottom:10px;
+}
+.name-subheader a {
+    margin-right: 20px;
+    color: #6E8B88;
+}
+
+.flash {
+    background: #cee5F5;
+}
+
+.margin-top {
+    margin-top: 30px;
+}
+.margin-right {
+    margin-right: 30px;
+}
+.margin-left {
+    margin-left: 30px;
+}
+.margin-bottom{
+    margin-bottom: 30px;
+}
+.padding-top {
+    padding-top: 30px;
+}
+.padding-bottom {
+    padding-bottom: 30px;
+}
+.padding-left {
+    padding-left:30px;
+}
+.padding-none {
+    padding: 0;
+}
+.btn {
+    padding: 20px;
+    margin: 0;
+    border-color: #9FB80A;
+    border-width: 2px;
+    color: #9FB80A;;
+}
+.btn:hover {
+    border-color: #9FB80A;
+}
+.btn.delete {
+    border-color: #aaaaaa;
+    color: #aaaaaa;
+}
+.btn.delete:hover {
+    border-color: #aaaaaa;
+    color: red;
+}
+

@@ -1,0 +1,28 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
+<div class="row banner main">
+    <div class="col-md-1"></div>
+    <div class="col-md-11 padding-none">
+        <h1> Delete Track </h1>
+    </div>
+</div>
+
+<div class="row main-section">
+    <div class="col-md-12 margin-bottom">
+        <h2> Are you sure you want to delete {{track.name}}? </h2>
+        </br>
+
+        <form action="{{ url_for('deleteTrack', playlist_id = playlist_id, track_id = track.id )}}" method = 'post'>
+
+        <input type='submit', value = 'Delete'>
+
+        <a href = "{{ url_for('showTracks', playlist_id = playlist_id)}}"> Cancel </a>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

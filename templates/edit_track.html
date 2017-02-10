@@ -1,0 +1,46 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
+<div class="row banner main">
+    <div class="col-md-1"></div>
+    <div class="col-md-11 padding-none">
+        <h1 class="header"> Edit Track </h1>
+    </div>
+</div>
+
+<div class="pane">
+
+
+
+<form action="{{url_for('editTrack', playlist_id=playlist_id, track_id = track.id )}}" method = 'POST'>
+
+<div class="centertxt">
+<p>Name:</p>
+<input type='text' size='30' name='name' placeholder='{{ track.name }}'>
+</div>
+
+<div class="centertxt">
+<p>Artist:</p>
+<input type='text' size='30' name='artist' placeholder='{{ track.artist }}'>
+</div>
+
+<div class="centertxt">
+<p>Album:</p>
+<input type='text' size='30' name='album' placeholder='{{ track.album }}'>
+</div>
+
+<br><br>
+
+<div class="centertxt">
+<input type='submit' value='Update'>
+<br>
+
+<a href="{{url_for('showTracks', playlist_id = playlist_id)}}">Cancel</a>
+</div>
+
+</form>
+
+</div>
+
+{% endblock %}

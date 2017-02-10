@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
+<div class="row banner main">
+    <div class="col-md-12 padding-none">
+        <h1> Edit Playlist: </h1>
+    </div>
+</div>
+
+<div class="row main-section">
+    <div class="col-md-12 margin-bottom">
+
+        <form action="{{url_for('editPlaylist', playlist_id=playlist.id)}}" method = 'POST'>
+
+        <p>Name:</p>
+
+        <input type='text' size='30' name='name' placeholder='{{ playlist.name }}'>
+
+        <br><br>
+        <input type='submit' value='Update'>
+
+        <a href="{{url_for('showPlaylists', playlist_id = playlist.id)}}">Cancel</a>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

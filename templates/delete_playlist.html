@@ -1,0 +1,26 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
+<div class="row banner main">
+    <div class="col-md-12 padding-none">
+        <h1> Delete Playlist </h1>
+    </div>
+</div>
+
+<div class="row main-section">
+    <div class="col-md-12 margin-bottom">
+
+        <h2> Are you sure you want to delete {{playlist.name}}? </h2>
+
+        <form action="{{ url_for('deletePlaylist', playlist_id = playlist.id)}}" method = 'post'>
+        <input type='submit', value = 'Delete'>
+
+        <a href = "{{ url_for('showPlaylists')}}"> Cancel </a>
+
+        </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

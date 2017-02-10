@@ -1,0 +1,51 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
+<div class="row banner main">
+    <div class="col-md-9 padding-none">
+        <h1>{{ playlist.name }}</h1>
+    </div>
+    <div class="col-md-3">
+        <a href='{{url_for('newTrack', playlist_id = playlist.id) }}'><h2 class="header">New Track</h2></a>
+    </div>
+</div>
+
+<div class="row main-section">
+    <div class="col-md-12">
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+
+            <ul>
+            {% for message in messages %}
+                <div class="flash"><li><strong> {{ message }} </strong></li></div>
+            {% endfor %}
+            </ul>
+
+            {% endif %}
+        {% endwith %}
+
+
+        {% for t in tracks %}
+
+            <div class="name">{{t.name}}</div></br><br>
+
+            <div class="artist">{{t.artist}}</div>
+
+            <div class="album">{{t.album}}</div>
+
+            <div class="name-subheader">
+                <a href='{{url_for('editTrack', playlist_id = playlist.id, track_id = t.id ) }}'>Edit</a>
+
+                <a href = '{{url_for('deleteTrack', playlist_id = playlist.id, track_id = t.id ) }}'>Delete</a></br>
+            </div>
+
+        </br>
+
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}

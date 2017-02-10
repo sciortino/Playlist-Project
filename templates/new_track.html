@@ -1,0 +1,32 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
+<div class="row banner main">
+    <div class="col-md-12">
+        <h1> Add New Track </h1>
+    </div>
+</div>
+
+<div class="row main-section">
+    <div class="col-md-12 margin-bottom">
+        <form action="{{url_for('newTrack', playlist_id=playlist_id )}}" method = 'POST'>
+
+        <p>Name:</p>
+        <input type='text' size='30' name='name'>
+
+        <p>Artist:</p>
+        <input type='text' size='30' name='artist'>
+
+        <p>Album:</p>
+        <input type='text' size='30' name='album'>
+
+        <br><br>
+        <input type='submit' value='Create'>
+        <a href="{{url_for('showTracks', playlist_id = playlist_id)}}">Cancel</a>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}

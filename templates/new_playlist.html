@@ -1,0 +1,26 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
+<div class="row banner main">
+    <div class="col-md-12">
+        <h1> New Playlist </h1>
+    </div>
+</div>
+
+<div class="row main-section">
+    <div class="col-md-12 margin-bottom">
+        <form action="{{url_for('newPlaylist')}}" method = 'POST'>
+
+        <p><h2>Name:</h2></p>
+
+        <input type='text' size='30' name='name'>
+        <br><br>
+        <input type='submit' value='Create'>
+        <a href='{{url_for('showPlaylists') }}'>Cancel</a>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
