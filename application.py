@@ -5,7 +5,8 @@ from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from db_setup import Base, User, Playlist, Track
 from flask import session as login_session
-import random, string
+import random
+import string
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
@@ -30,12 +31,15 @@ APPLICATION_NAME = "Music Playlist Application"
 
 # Create a state token to prevent request forgery.
 # Store it in the session for later validation.
+
+
 @app.route('/login')
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase +
-        string.digits) for x in xrange(32))
+                                  string.digits) for x in xrange(32))
     login_session['state'] = state
     return render_template('login.html', STATE=state)
+
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
@@ -46,10 +50,12 @@ def fbconnect():
     access_token = request.data
     print "access token received %s " % access_token
 
-    app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
+    app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
+        'web']['app_id']
     app_secret = json.loads(
-        open('fb_client_secrets.json','r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id, app_secret, access_token)
+        open('fb_client_secrets.json', 'r').read())['web']['app_secret']
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
+        app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     print "RESULT"
@@ -74,7 +80,9 @@ def fbconnect():
     login_session['email'] = data["email"]
     login_session['facebook_id'] = data["id"]
 
-    # The token must be stored in the login_session in order to properly logout, let's strip out the information before the equals sign in our token
+    # The token must be stored in the login_session in order to properly
+    # logout, let's strip out the information before the equals sign in our
+    # token
     stored_token = token.split("=")[1]
     login_session['access_token'] = stored_token
 
@@ -104,12 +112,14 @@ def fbconnect():
     flash("Now logged in as %s" % login_session['username'])
     return output
 
+
 @app.route('/fbdisconnect')
 def fbdisconnect():
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
     access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (
+        facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -167,7 +177,8 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'), 200)
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -192,7 +203,6 @@ def gconnect():
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
 
-
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -206,15 +216,18 @@ def gconnect():
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
 
+
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('credentials')
     if access_token is None:
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     print login_session['access_token']
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session[
+        'access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
@@ -224,7 +237,8 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -251,27 +265,31 @@ def disconnect():
         flash("You were not logged in to begin with!")
         return redirect(url_for('showPlaylists'))
 
-#JSON APIs to view Restaurant Information
+# JSON APIs to view Restaurant Information
+
+
 @app.route('/playlist/<int:playlist_id>/track/JSON')
 def playlistTrackJSON(playlist_id):
     if 'username' not in login_session:
         return redirect('/login')
-    tracks = session.query(Track).filter_by(playlist_id = playlist_id).all()
+    tracks = session.query(Track).filter_by(playlist_id=playlist_id).all()
     return jsonify(Tracks=[t.serialize for t in tracks])
+
 
 @app.route('/playlist/<int:playlist_id>/track/<int:track_id>/JSON')
 def trackJSON(playlist_id, track_id):
     if 'username' not in login_session:
         return redirect('/login')
-    Track = session.query(Track).filter_by(id = menu_id).one()
-    return jsonify(Track = Track.serialize)
+    Track = session.query(Track).filter_by(id=menu_id).one()
+    return jsonify(Track=Track.serialize)
+
 
 @app.route('/playlist/JSON')
 def playlistJSON():
     if 'username' not in login_session:
         return redirect('/login')
     playlists = session.query(Playlist).all()
-    return jsonify(playlists= [p.serialize for p in playlists])
+    return jsonify(playlists=[p.serialize for p in playlists])
 
 
 # Show all Playlists
@@ -279,15 +297,18 @@ def playlistJSON():
 @app.route("/playlist/")
 def showPlaylists():
     playlists = session.query(Playlist).order_by(asc(Playlist.id))
-    return render_template("playlists.html", playlists = playlists)
+    return render_template("playlists.html", playlists=playlists)
 
 # Create new Playlist
-@app.route('/playlist/new/', methods=['GET','POST'])
+
+
+@app.route('/playlist/new/', methods=['GET', 'POST'])
 def newPlaylist():
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
-        newPlaylist = Playlist(name = request.form['name'], user_id=login_session['user_id'])
+        newPlaylist = Playlist(
+            name=request.form['name'], user_id=login_session['user_id'])
         session.add(newPlaylist)
         flash('New Playlist %s Successfully Created' % newPlaylist.name)
         session.commit()
@@ -296,11 +317,13 @@ def newPlaylist():
         return render_template('new_playlist.html')
 
 # Edit a playlist
-@app.route('/playlist/<int:playlist_id>/edit/', methods = ['GET', 'POST'])
+
+
+@app.route('/playlist/<int:playlist_id>/edit/', methods=['GET', 'POST'])
 def editPlaylist(playlist_id):
     if 'username' not in login_session:
         return redirect('/login')
-    editedPlaylist = session.query(Playlist).filter_by(id = playlist_id).one()
+    editedPlaylist = session.query(Playlist).filter_by(id=playlist_id).one()
     if editedPlaylist.user_id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not authorized to edit this playlist. Please create a new playlist.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
@@ -309,56 +332,61 @@ def editPlaylist(playlist_id):
             flash('Playlist Successfully Edited %s' % editedPlaylist.name)
             return redirect(url_for('showPlaylists'))
     else:
-        return render_template('edit_playlist.html', playlist = editedPlaylist)
+        return render_template('edit_playlist.html', playlist=editedPlaylist)
 
 
 # Delete a playlist
-@app.route('/playlist/<int:playlist_id>/delete/', methods = ['GET','POST'])
+@app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
 def deletePlaylist(playlist_id):
     if 'username' not in login_session:
         return redirect('/login')
-    playlistToDelete = session.query(Playlist).filter_by(id = playlist_id).one()
+    playlistToDelete = session.query(Playlist).filter_by(id=playlist_id).one()
     if playlistToDelete.user_id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not authorized to delete this playlist. Please create your own playlist in order to delete.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(playlistToDelete)
         flash('%s Successfully Deleted' % playlistToDelete.name)
         session.commit()
-        return redirect(url_for('showPlaylists', playlist_id = playlist_id))
+        return redirect(url_for('showPlaylists', playlist_id=playlist_id))
     else:
-        return render_template('delete_playlist.html', playlist = playlistToDelete)
+        return render_template('delete_playlist.html', playlist=playlistToDelete)
 
 
 # Show all tracks in a playlist
 @app.route("/playlist/<int:playlist_id>/")
 @app.route("/playlist/<int:playlist_id>/track")
 def showTracks(playlist_id):
-    playlist = session.query(Playlist).filter_by(id = playlist_id).one()
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     creator = getUserInfo(playlist.user_id)
-    tracks = session.query(Track).filter_by(playlist_id = playlist_id).all()
-    return render_template("tracks.html", tracks = tracks, playlist = playlist)
+    tracks = session.query(Track).filter_by(playlist_id=playlist_id).all()
+    return render_template("tracks.html", tracks=tracks, playlist=playlist)
 
 # Add a new track to a playlist
-@app.route('/playlist/<int:playlist_id>/track/new/', methods=['GET','POST'])
+
+
+@app.route('/playlist/<int:playlist_id>/track/new/', methods=['GET', 'POST'])
 def newTrack(playlist_id):
     if 'username' not in login_session:
         return redirect('/login')
-    playlist = session.query(Playlist).filter_by(id = playlist_id).one()
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     if request.method == 'POST':
-        newTrack = Track(name = request.form['name'], artist = request.form['artist'], album = request.form['album'],
-            playlist_id = playlist_id, user_id = login_session['user_id'])
+        newTrack = Track(name=request.form['name'], artist=request.form['artist'], album=request.form['album'],
+                         playlist_id=playlist_id, user_id=login_session['user_id'])
         session.add(newTrack)
         session.commit()
-        flash('New Track "%s" added to your playlist: "%s"!' % (newTrack.name, playlist.name))
-        return redirect(url_for('showTracks', playlist_id = playlist_id))
+        flash('New Track "%s" added to your playlist: "%s"!' %
+              (newTrack.name, playlist.name))
+        return redirect(url_for('showTracks', playlist_id=playlist_id))
     else:
-        return render_template('new_track.html', playlist_id = playlist_id)
+        return render_template('new_track.html', playlist_id=playlist_id)
 
 # Edit a track
+
+
 @app.route('/playlist/<int:playlist_id>/track/<int:track_id>/edit', methods=['GET', 'POST'])
 def editTrack(playlist_id, track_id):
-    editedTrack = session.query(Track).filter_by(id = track_id).one()
-    playlist = session.query(Playlist).filter_by(id = playlist_id).one()
+    editedTrack = session.query(Track).filter_by(id=track_id).one()
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
@@ -371,45 +399,52 @@ def editTrack(playlist_id, track_id):
         session.add(editedTrack)
         session.commit()
         flash('Track Successfully Edited')
-        return redirect(url_for('showTracks', playlist_id = playlist.id))
+        return redirect(url_for('showTracks', playlist_id=playlist.id))
     else:
-        return render_template('edit_track.html', playlist_id = playlist.id, track = editedTrack)
+        return render_template('edit_track.html', playlist_id=playlist.id, track=editedTrack)
 
 # Delete a track
+
+
 @app.route('/playlist/<int:playlist_id>/track/<int:track_id>/delete', methods=['GET', 'POST'])
 def deleteTrack(playlist_id, track_id):
     if 'username' not in login_session:
         return redirect('/login')
-    playlist = session.query(Playlist).filter_by(id = playlist_id).one()
-    trackToDelete = session.query(Track).filter_by(id = track_id).one()
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    trackToDelete = session.query(Track).filter_by(id=track_id).one()
     if request.method == 'POST':
         session.delete(trackToDelete)
         session.commit()
         flash('Track Successfully Deleted')
-        return redirect(url_for('showTracks', playlist_id = playlist.id))
+        return redirect(url_for('showTracks', playlist_id=playlist.id))
     else:
-        return render_template('delete_track.html', playlist_id = playlist_id, track = trackToDelete)
+        return render_template('delete_track.html', playlist_id=playlist_id, track=trackToDelete)
 
 # Define User functions
+
+
 def createUser(login_session):
-    newUser = User(name = login_session['username'], email = login_session['email'], picture = login_session['picture'])
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
     session.add(newUser)
     session.commit()
-    user = session.query(User).filter_by(email = login_session['email']).one()
+    user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
 
+
 def getUserInfo(user_id):
-    user = session.query(User).filter_by(id = user_id).one()
+    user = session.query(User).filter_by(id=user_id).one()
     return user
+
 
 def getUserID(email):
     try:
-        user = session.query(User).filter_by(email = email).one()
+        user = session.query(User).filter_by(email=email).one()
         return user.id
     except:
         return None
 
 if __name__ == '__main__':
-  app.secret_key = 'super_secret_key'
-  app.debug = True
-  app.run(host = '0.0.0.0', port = 5000)
+    app.secret_key = 'super_secret_key'
+    app.debug = True
+    app.run(host='0.0.0.0', port=5000)

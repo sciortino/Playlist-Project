@@ -68,7 +68,7 @@ a {
     height: 130px;
     background-size: cover;
     background-color: #283651;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 .banner h1 {
     margin: 15px;
@@ -76,7 +76,7 @@ a {
 }
 .main-section {
     background-color: #283651;
-    opacity: 0.8;
+    opacity: 0.9;
     padding-left: 50px;
 }
 
