@@ -28,6 +28,7 @@ class Playlist(Base):
     name = Column(String(80), nullable=False)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
+    tracks = relationship("Track", cascade="all, delete-orphan")
 
     @property
     def serialize(self):

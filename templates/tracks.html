@@ -11,8 +11,11 @@
     </div>
 </div>
 
+
 <div class="row main-section">
     <div class="col-md-12">
+
+        <h3 margin-left>Playlist created by {{ creator.name }}</h3>
 
         {% with messages = get_flashed_messages() %}
             {% if messages %}

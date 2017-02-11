@@ -3,44 +3,33 @@
 {% include "header.html" %}
 
 <div class="row banner main">
-    <div class="col-md-1"></div>
-    <div class="col-md-11 padding-none">
-        <h1 class="header"> Edit Track </h1>
+    <div class="col-md-12 padding-none">
+        <h1> Edit Track </h1>
     </div>
 </div>
 
-<div class="pane">
+<div class="row main-section">
+    <div class="col-md-12 margin-bottom">
 
+        <form action="{{url_for('editTrack', playlist_id=playlist_id, track_id = track.id )}}" method = 'POST'>
 
+        <p>Name:</p>
+        <input type='text' size='30' name='name' placeholder='{{ track.name }}'>
 
-<form action="{{url_for('editTrack', playlist_id=playlist_id, track_id = track.id )}}" method = 'POST'>
+        <p>Artist:</p>
+        <input type='text' size='30' name='artist' placeholder='{{ track.artist }}'>
 
-<div class="centertxt">
-<p>Name:</p>
-<input type='text' size='30' name='name' placeholder='{{ track.name }}'>
-</div>
+        <p>Album:</p>
+        <input type='text' size='30' name='album' placeholder='{{ track.album }}'>
 
-<div class="centertxt">
-<p>Artist:</p>
-<input type='text' size='30' name='artist' placeholder='{{ track.artist }}'>
-</div>
+        <br><br>
+        <input type='submit' value='Update'>
 
-<div class="centertxt">
-<p>Album:</p>
-<input type='text' size='30' name='album' placeholder='{{ track.album }}'>
-</div>
+        <a href="{{url_for('showTracks', playlist_id = playlist_id)}}">Cancel</a>
 
-<br><br>
+        </form>
 
-<div class="centertxt">
-<input type='submit' value='Update'>
-<br>
-
-<a href="{{url_for('showTracks', playlist_id = playlist_id)}}">Cancel</a>
-</div>
-
-</form>
-
+    </div>
 </div>
 
 {% endblock %}

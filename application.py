@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, g
+from flask import Flask, render_template, request, \
+    redirect, jsonify, url_for, flash, g
 app = Flask(__name__)
 
 from sqlalchemy import create_engine, asc
@@ -16,6 +17,8 @@ import requests
 import base64
 import urllib
 
+from functools import wraps
+
 # Connect to Database and create database session
 engine = create_engine('sqlite:///playlistModel.db')
 Base.metadata.bind = engine
@@ -28,6 +31,16 @@ session = DBSession()
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Music Playlist Application"
+
+
+# Login Decorator function
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in login_session:
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Create a state token to prevent request forgery.
 # Store it in the session for later validation.
@@ -54,8 +67,9 @@ def fbconnect():
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
-        app_id, app_secret, access_token)
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=' \
+        'fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=' \
+        '%s' % (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     print "RESULT"
@@ -87,7 +101,8 @@ def fbconnect():
     login_session['access_token'] = stored_token
 
     # Get user picture
-    url = 'https://graph.facebook.com/v2.4/me/picture?%s&redirect=0&height=200&width=200' % token
+    url = 'https://graph.facebook.com/v2.4/me/picture?%s' \
+        '&redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -107,7 +122,8 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;" \
+        "-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
     return output
@@ -151,7 +167,7 @@ def gconnect():
     url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
            % access_token)
     h = httplib2.Http()
-    result = json.loads(h.request(url, 'GET')[1])
+    result = json.loads(h.request(url, 'GET')[1].decode("utf8"))
     # If there was an error in the access token info, abort.
     if result.get('error') is not None:
         response = make_response(json.dumps(result.get('error')), 500)
@@ -183,6 +199,7 @@ def gconnect():
         return response
 
     # Store the access token in the session for later use.
+    login_session['provider'] = 'google'
     login_session['credentials'] = credentials.access_token
     login_session['gplus_id'] = gplus_id
 
@@ -209,7 +226,8 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;" \
+        "-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
@@ -226,8 +244,8 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     print login_session['access_token']
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session[
-        'access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % \
+        login_session['access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
@@ -247,13 +265,10 @@ def gdisconnect():
 def disconnect():
     if 'provider' in login_session:
         if login_session['provider'] == 'google':
-            gdisconnect()
             del login_session['gplus_id']
             del login_session['credentials']
         if login_session['provider'] == 'facebook':
-            fbdisconnect()
             del login_session['facebook_id']
-
         del login_session['username']
         del login_session['email']
         del login_session['picture']
@@ -265,34 +280,33 @@ def disconnect():
         flash("You were not logged in to begin with!")
         return redirect(url_for('showPlaylists'))
 
-# JSON APIs to view Restaurant Information
+# JSON APIs to view Playlist and Track Information
 
 
 @app.route('/playlist/<int:playlist_id>/track/JSON')
+@login_required
 def playlistTrackJSON(playlist_id):
-    if 'username' not in login_session:
-        return redirect('/login')
     tracks = session.query(Track).filter_by(playlist_id=playlist_id).all()
     return jsonify(Tracks=[t.serialize for t in tracks])
 
 
 @app.route('/playlist/<int:playlist_id>/track/<int:track_id>/JSON')
+@login_required
 def trackJSON(playlist_id, track_id):
-    if 'username' not in login_session:
-        return redirect('/login')
-    Track = session.query(Track).filter_by(id=menu_id).one()
-    return jsonify(Track=Track.serialize)
+    track = session.query(Track).filter_by(id=track_id).one()
+    playlist = session.query(Playlist).filter_by(id=playlist_id).one()
+    return jsonify(Tracks=track.serialize, Playlists=playlist.serialize)
 
 
 @app.route('/playlist/JSON')
+@login_required
 def playlistJSON():
-    if 'username' not in login_session:
-        return redirect('/login')
     playlists = session.query(Playlist).all()
     return jsonify(playlists=[p.serialize for p in playlists])
 
 
 # Show all Playlists
+
 @app.route('/')
 @app.route("/playlist/")
 def showPlaylists():
@@ -303,9 +317,8 @@ def showPlaylists():
 
 
 @app.route('/playlist/new/', methods=['GET', 'POST'])
+@login_required
 def newPlaylist():
-    if 'username' not in login_session:
-        return redirect('/login')
     if request.method == 'POST':
         newPlaylist = Playlist(
             name=request.form['name'], user_id=login_session['user_id'])
@@ -320,12 +333,12 @@ def newPlaylist():
 
 
 @app.route('/playlist/<int:playlist_id>/edit/', methods=['GET', 'POST'])
+@login_required
 def editPlaylist(playlist_id):
-    if 'username' not in login_session:
-        return redirect('/login')
     editedPlaylist = session.query(Playlist).filter_by(id=playlist_id).one()
     if editedPlaylist.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to edit this playlist. Please create a new playlist.');}</script><body onload='myFunction()''>"
+        flash('You are not authorized to edit this playlist.')
+        return redirect('/playlist')
     if request.method == 'POST':
         if request.form['name']:
             editedPlaylist.name = request.form['name']
@@ -337,19 +350,20 @@ def editPlaylist(playlist_id):
 
 # Delete a playlist
 @app.route('/playlist/<int:playlist_id>/delete/', methods=['GET', 'POST'])
+@login_required
 def deletePlaylist(playlist_id):
-    if 'username' not in login_session:
-        return redirect('/login')
     playlistToDelete = session.query(Playlist).filter_by(id=playlist_id).one()
     if playlistToDelete.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to delete this playlist. Please create your own playlist in order to delete.');}</script><body onload='myFunction()''>"
+        flash('You are not authorized to delete this playlist.')
+        return redirect('/playlist')
     if request.method == 'POST':
         session.delete(playlistToDelete)
         flash('%s Successfully Deleted' % playlistToDelete.name)
         session.commit()
         return redirect(url_for('showPlaylists', playlist_id=playlist_id))
     else:
-        return render_template('delete_playlist.html', playlist=playlistToDelete)
+        return render_template('delete_playlist.html',
+                               playlist=playlistToDelete)
 
 
 # Show all tracks in a playlist
@@ -359,19 +373,22 @@ def showTracks(playlist_id):
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     creator = getUserInfo(playlist.user_id)
     tracks = session.query(Track).filter_by(playlist_id=playlist_id).all()
-    return render_template("tracks.html", tracks=tracks, playlist=playlist)
+    return render_template("tracks.html", tracks=tracks,
+                           playlist=playlist, creator=creator)
 
 # Add a new track to a playlist
 
 
 @app.route('/playlist/<int:playlist_id>/track/new/', methods=['GET', 'POST'])
+@login_required
 def newTrack(playlist_id):
-    if 'username' not in login_session:
-        return redirect('/login')
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     if request.method == 'POST':
-        newTrack = Track(name=request.form['name'], artist=request.form['artist'], album=request.form['album'],
-                         playlist_id=playlist_id, user_id=login_session['user_id'])
+        newTrack = Track(name=request.form['name'],
+                         artist=request.form['artist'],
+                         album=request.form['album'],
+                         playlist_id=playlist_id,
+                         user_id=login_session['user_id'])
         session.add(newTrack)
         session.commit()
         flash('New Track "%s" added to your playlist: "%s"!' %
@@ -383,12 +400,18 @@ def newTrack(playlist_id):
 # Edit a track
 
 
-@app.route('/playlist/<int:playlist_id>/track/<int:track_id>/edit', methods=['GET', 'POST'])
+@app.route('/playlist/<int:playlist_id>/track/<int:track_id>/edit',
+           methods=['GET', 'POST'])
+@login_required
 def editTrack(playlist_id, track_id):
     editedTrack = session.query(Track).filter_by(id=track_id).one()
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
-    if 'username' not in login_session:
-        return redirect('/login')
+    if editedTrack.user_id != login_session['user_id']:
+        return "<script>function myFunction() " \
+               "{alert('You are not authorized to edit this track. " \
+               "Please create your own playlist and track to edit.');" \
+               "window.location = '/playlist' }" \
+               "</script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             editedTrack.name = request.form['name']
@@ -401,24 +424,32 @@ def editTrack(playlist_id, track_id):
         flash('Track Successfully Edited')
         return redirect(url_for('showTracks', playlist_id=playlist.id))
     else:
-        return render_template('edit_track.html', playlist_id=playlist.id, track=editedTrack)
+        return render_template('edit_track.html', playlist_id=playlist.id,
+                               track=editedTrack)
 
 # Delete a track
 
 
-@app.route('/playlist/<int:playlist_id>/track/<int:track_id>/delete', methods=['GET', 'POST'])
+@app.route('/playlist/<int:playlist_id>/track/<int:track_id>/delete',
+           methods=['GET', 'POST'])
+@login_required
 def deleteTrack(playlist_id, track_id):
-    if 'username' not in login_session:
-        return redirect('/login')
     playlist = session.query(Playlist).filter_by(id=playlist_id).one()
     trackToDelete = session.query(Track).filter_by(id=track_id).one()
+    if trackToDelete.user_id != login_session['user_id']:
+        return "<script>function myFunction() " \
+               "{alert('You are not authorized to delete this track. " \
+               "Please create your own playlist and track to delete.');" \
+               "window.location = '/playlist' }" \
+               "</script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(trackToDelete)
         session.commit()
         flash('Track Successfully Deleted')
         return redirect(url_for('showTracks', playlist_id=playlist.id))
     else:
-        return render_template('delete_track.html', playlist_id=playlist_id, track=trackToDelete)
+        return render_template('delete_track.html', playlist_id=playlist_id,
+                               track=trackToDelete)
 
 # Define User functions
 

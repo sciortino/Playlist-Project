@@ -20,7 +20,7 @@ h2 {
 
 h3 {
     font-size: 18px;
-    color: #4A4A4A;
+    color: #E0D0B2;
     line-height: 23px;
 }
  p {
@@ -82,7 +82,7 @@ a {
 
 .header {
     left:50%;
-    text-align: center;
+    text-align: right;
 }
 .name {
     width:100%;
